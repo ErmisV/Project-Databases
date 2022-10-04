@@ -1,0 +1,792 @@
+drop database if exists staffevaluation;
+
+create database staffevaluation;
+use staffevaluation;
+
+create table company(AFM char(9) primary key not null,DOY varchar(15), name varchar(35), phone bigint(16),street varchar(15),num tinyint(4), city varchar(15),country varchar(15));
+create table antikeim(title varchar(35) primary key, descr tinytext, belongs_to varchar(36),constraint b foreign key(belongs_to) references antikeim(title));
+
+
+create table user(username varchar(12) primary key,password varchar(10),name varchar(25),surname varchar(35), reg_date datetime, email varchar(20),constraint c foreign key(username) references manager(username) on delete cascade on update cascade);
+
+create table manager(managerusername varchar(12),exp_years tinyint(4),firm char(9),primary key(managerusername,firm), constraint a1 foreign key(firm) references company(AFM), constraint a2 foreign key(managerusername) references user(username)); 
+
+create table employee(username varchar(12) primary key,bio text,sistatikes varchar(35), certificates varchar(35), awards varchar(35));
+
+create table evaluator(username varchar(12) primary key, exp_years tinyint(4), firm char(9), constraint d foreign key(username) references manager(username) on delete cascade on update cascade, constraint e foreign key(firm) references company(AFM) on delete cascade on update cascade);
+
+
+create table job(id int(4) primary key, start_date date, salary float(6,1),position varchar(40), edra varchar(45), evaluator varchar(12), announce_date datetime, submission_date date,constraint f foreign key(evaluator) references evaluator(username) on delete cascade on update cascade);
+
+create table project(empl varchar(12),num tinyint(4),descr text, url varchar(60),primary key(empl,num), constraint f foreign key(num) references needs(job_id) on delete cascade on update cascade);
+
+create table needs(job_id int(4),antikeim_title varchar(36),primary key(job_id,antikeim_title), constraint g foreign key(antikeim_title) references antikeim(title) on delete cascade on update cascade);
+
+create table requestsevaluation(empl_username varchar(12),job_id int(4),primary key(empl_username,job_id),constraint h foreign key(empl_username) references employee(username) on delete cascade on update cascade, constraint j foreign key(job_id) references job(job_id) on delete cascade on update cascade);
+
+create table languages(employee varchar(12) primary key, lang set('EN','FR','SP','GR'), constraint k foreign key(employee) references employee(username) on delete cascade on update cascade);
+
+create table degree(titlos varchar(50), idryma varchar(40),primary key(titlos,idryma));
+
+create table has_degree(degr_title varchar(50), degr_idryma varchar(40),empl_username varchar(12), etos year(4), grade float(3,1), primary key(degr_title,degr_idryma,empl_username),constraint m foreign key(degr_title) references degree(title),constraint n foreign key(empl_username) references employee(username));
+
+create table evaluationresult(Evld int(4) not null auto_increment, empl_username varchar(12), job_id int(4), grade int(4), comments varchar(255),primary key(evld,empl_username), constraint p foreign key(empl_username) references employee(username), constraint q foreign key(job_id) references job(job_id));
+
+
+create table evaluation_process(aa int primary key,job_id int,
+bathmos_synenteyxis ENUM('0','1','2','3','4'),sxolia_synenetyxis text,xaraktirismos_synenteyxis ENUM('1','2','3'),
+bathmos_report ENUM('0','1','2','3','4'), sxolia_report text,xaraktirismos_report ENUM('1','2','3'),
+bathmos_loipon ENUM('0','1','2'),sxolia_loipon text,xaraktirismos_loipon ENUM('1','2','3'), 
+username_eval varchar(12),
+username_emp varchar(12),
+teliko_apotelesma float (3,1),
+constraint z1 foreign key(username_eval) references evaluator(username),
+constraint z2 foreign key(username_emp) references employee(username),
+constraint z3 foreign key(job_id) references job(job_id));
+
+create table ypoboli_aitiseon(aa_aitisis int primary key auto_increment,job_id int, eusername varchar(12), constraint t foreign key(job_id) references job(job_id),constraint z foreign key(eusername) references employee(username));
+
+create table log(username varchar(12),hmer_ora datetime,apotelesma varchar(20),eidos_energeias varchar(20),onoma_pinaka varchar(20));
+
+-- ------------------------------------------------------------------------------------------------------------------------------------------------------
+insert into company values('123456123','A Patras','Kataskeyasti Patras','2610-394509','Korinthou',10,'Patras','Greece');
+insert into company values('123456888','B Patras','Emporio Sidiroy Patras','2610-324317','Avlonos',20,'Patras','Greece');
+insert into company values('100045608','Pyrgou','Emporio Domion Ylikon','23610-52455','Korinthou',87,'Patras','Greece');
+
+insert into user values('admin','admin','Manos','Giannakopoulos','2020-1-1','manos@gmail.com');
+insert into user values('arg','000','Nikos','Argyriadis','2020-12-1','argiriad@gmail.com');
+insert into user values('manolop','657','Kostas','Manolopoulos','2020-11-1','manolop@gmail.com');
+insert into user values('giannakoy','123','Maria','Giannakou','2020-11-1','gianakou@gmail.com');
+insert into user values('dimop','233','Giorgos','Dimopoulos','2019-11-10','dimop$hotmail.com');
+insert into user values('delig','999','Andreas','Deligiannis','2018-6-10','delig$hotmail.com');
+insert into user values('dalak','551','Anna','Dalaka','2017-1-9','dalak$hotmail.com');
+insert into user values('papan','112','Nikos','Papanikolaou','2020-1-1','argiriad@hotmail.com');
+insert into user values('papag','555','Kostas','Papageorgiou','2020-9-1','papag@hotmail.com');
+insert into user values('papad','563','Vasilis','Papdionysiou','2020-8-1','papad@gmail.com');
+insert into user values('xristop','345','Eleni','Papanikolaou','2020-51-1','xristop@gmail.com');
+insert into user values('xorafop','346','Anna','Papageorgiou','2020-7-1','xorafop@gmail.com');
+insert into user values('karela','347','Sofia','Karela','2020-4-1','karela@gmail.com');
+
+
+insert into manager values('papan',10,'123456123');
+insert into manager values('papag',8,'123456888');
+insert into manager values('papad',7,'100045608');
+
+
+insert into employee values('arg','Exei megali Proyphresia se networks','exei polles sistatikes','arg_certificates.pdf','arg_awards.pdf');
+insert into employee values('manolop','Exei mikri Proyphresia se networks','exei liges sistatikes','manolop_certificates.pdf','manolop_awards.pdf');
+insert into employee values('giannakoy','Exei sxetika megali Proyphresia se Databases','exei arrketes sistatikes','giannakoy_certificates.pdf','giannakoy_awards.pdf');
+insert into employee values('dimop','Exei Proyphresia se Databases','exei sistatikes apo proigoumenes douleis','dimop_certificates.pdf','dimop_awards.pdf');
+insert into employee values('delig','Exei doulepsei poly se ierarxikes Databases','exei liges sistatikes','delig.pdf','delig.pdf');
+insert into employee values('dalak','Exei empeiria se Databases kai Networks','Polles sistatikes','dalak_certificates.pdf','dalak_awards.pdf');
+
+
+
+insert into employee values('karela','Enai i pio kali evaluator','Polles systatikes','karela_certificates.pdf','karela_awards.pdf');
+insert into employee values('xristop','Enai i pio kali evaluator','Liges systatikes','xristop_certificates.pdf','xristop_awards.pdf');
+insert into employee values('xorafop','Enai i pio kali evaluator','Polles systatikes','xorafop_certificates.pdf','xorafop_awards.pdf');
+
+
+insert into evaluator values('papan',9,'123456123');
+insert into evaluator values('papag',8,'123456888');
+insert into evaluator values('papad',7,'100045608');
+
+insert into evaluator values('xristop',10,'123456123');
+insert into evaluator values('xorafop',20,'123456888');
+insert into evaluator values('karela',15,'123456123');
+insert into evaluator values('karela',15,'123456888');
+
+
+insert into antikeim values('Networks','Root Element',NULL);
+insert into antikeim values('Local Area Networks','Second Level Element','Networks');
+insert into antikeim values('Wide Area Networks','Second Level Element','Networks');
+insert into antikeim values('Metropolitan Area Networks','Second Level Element','Networks');
+insert into antikeim values('Databases','Root Element',NULL);
+insert into antikeim values('MySQL','Second Level Element','Databases');
+insert into antikeim values('SQL Server','Second Level Element','Databases');
+
+
+insert into job values(1,'2020-1-1',1500,'Programmer','Patra','xristop','2020-1-2','2020-1-5');
+insert into job values(2,'2020-2-1',1600,'Programmer','Athina','xristop','2020-2-3','2020-2-7');
+insert into job values(3,'2020-3-1',1000,'Analyst','Pyrgos','xorafop','2020-3-6','2020-3-8');
+insert into job values(4,'2020-4-1',1100,'Analyst','Thessaloniki','xorafop','2020-4-7','2020-4-10');
+insert into job values(5,'2020-5-1',1600,'HelpDesk','Pyrgos','karela','2020-3-6','2020-5-8');
+insert into job values(6,'2020-6-11',2000,'Assistant Manager','Patra','xorafop','2020-6-17','2020-6-27');
+insert into job values(7,'2020-7-13',2200,'Assistant Manager','Patra','xristop','2020-7-17','2020-7-21');
+
+insert into job values(9,'2020-2-13',1300,'Assistant Secretary','Pyrgos','papag','2020-3-13','2020-3-15');
+insert into job values(10,'2020-2-3',1400,'Assistant Secretary','Thessaloniki','papad','2020-3-3','2020-3-5');
+insert into job values(11,'2020-2-23',1200,'Secretary','Patra','papan','2020-3-23','2020-3-25');
+
+
+insert into project values('arg',1,'Kataskeyi Topikou Diktyou','http:://www.ceid.upatras.gr');
+insert into project values('arg',2,'Kataskeyi WAN','http:://www.ceid.upatras.gr');
+insert into project values('manolop',1,'Kataskeyi sxesiakou RDBMS','http:://www.ceid.upatras.gr');
+insert into project values('manolop',2,'Kataskeyi ierarxikou RDBMS','http:://www.ceid.upatras.gr');
+insert into project values('arg',3,'Kataskeyi Topikou Diktyou','http:://www.diktya.gr');
+insert into project values('arg',4,'Kataskeyi WAN','http:://www.ceid.upatras.gr');
+insert into project values('manolop',5,'Kataskeyi sxesiakou RDBMS','http:://www.ece.upatras.gr');
+insert into project values('manolop',6,'Kataskeyi dentrikou RDBMS','http:://www.ece.upatras.gr');
+insert into project values('delig',1,'Epektasi Database Etaireias','http:://www.database.gr');
+insert into project values('dalak',1,'Epektasi Diktyou Etaireias','http:://www.diktya.gr');
+
+
+
+insert into needs values(1,'Networks');
+insert into needs values(2,'Networks');
+insert into needs values(3,'Local Area Networks');
+insert into needs values(3,'Wide Area Networks');
+insert into needs values(4,'Local Area Networks');
+insert into needs values(5,'Databases');
+insert into needs values(5,'SQL Server');
+
+insert into evaluationresult values('','arg',1,5,'Ta pige metria');
+insert into evaluationresult values('','manolop',2,9,'Ta pige arista');
+insert into evaluationresult values('','giannakoy',3,3,'Ta pige xalia');
+insert into evaluationresult values('','dimop',1,10,'Aristi eikona');
+insert into evaluationresult values('','delig',2,6,'Ta pige sxerika kala');
+insert into evaluationresult values('','dalak',3,7,'Ta pige kala');
+
+
+insert into degree values('AEI','Panepistimio Patras');
+insert into degree values('Master','Panepistimio Patras');
+insert into degree values('PHD','Panepistimio Patras');
+insert into degree values('AEI','Panepistimio Athinas');
+insert into degree values('Master','Panepistimio Athinas');
+insert into degree values('PHD','Panepistimio Athinas');
+
+
+insert into has_degree values('AEI','Panepistimio Athinas','arg',2015,6.5);
+insert into has_degree values('Master','Panepistimio Patras','arg',2018,6.5);
+insert into has_degree values('AEI','Panepistimio Athinas','manolop',2019,6);
+insert into has_degree values('PHD','Panepistimio Athinas','giannakoy',2019,8);
+insert into has_degree values('AEI','Panepistimio Athinas','dimop',2020,5);
+insert into has_degree values('Master','Panepistimio Patras','delig',2018,7.5);
+insert into has_degree values('Master','Panepistimio Patras','dalak',2017,8.5);
+insert into has_degree values('AEI','Panepistimio Patras','dalak',2015,5.5);
+
+
+insert into languages values('arg','EN');
+insert into languages values('manolop','GR');
+insert into languages values('giannakoy','FR,GR');
+insert into languages values('dimop','SP,GR');
+insert into languages values('delig','EN,SP');
+insert into languages values('dalak','EN,GR');
+
+insert into requestsevaluation values('arg',1);
+insert into requestsevaluation values('arg',2);
+insert into requestsevaluation values('manolop',2);
+insert into requestsevaluation values('manolop',3);
+insert into requestsevaluation values('giannakoy',3);
+insert into requestsevaluation values('giannakoy',4);
+insert into requestsevaluation values('dimop',5);
+insert into requestsevaluation values('dimop',6);
+insert into requestsevaluation values('delig',1);
+insert into requestsevaluation values('delig',6);
+insert into requestsevaluation values('delig',3);
+insert into requestsevaluation values('dalak',2);
+insert into requestsevaluation values('dalak',4);
+insert into requestsevaluation values('dalak',5);
+insert into requestsevaluation values('arg',3);
+insert into requestsevaluation values('giannakoy',11);
+insert into requestsevaluation values('giannakoy',13);
+insert into requestsevaluation values('giannakoy',23);
+
+
+insert into ypoboli_aitiseon values('',6,'arg');
+insert into ypoboli_aitiseon values('',7,'manolop');
+insert into ypoboli_aitiseon values('',6,'arg');
+insert into ypoboli_aitiseon values('',7,'manolop');
+insert into ypoboli_aitiseon values('',8,'manolop');
+insert into ypoboli_aitiseon values('',11,'giannakoy');
+insert into ypoboli_aitiseon values('',13,'giannakoy');
+insert into ypoboli_aitiseon values('',23,'giannakoy');
+
+
+insert into evaluation_process values(1,1,3,'Metria Synenetyxi',3,3,'O dieythintis exei metria eikona',3,3,'Exei mono ptyxio kai den exei systatikes oute diakriseis',null,'karela','arg',null);
+insert into evaluation_process values(2,2,3,'Kali Synenetyxi',2,2,'O dieythintis exei thetiki gnomi',2,1,'Exei Master kai 2 systatikes alla oxi diakriseis',1,'karela','arg',null);
+insert into evaluation_process values(3,3,4,'Aristi Synenetyxi',3,4,'O dieythintis exei aristi gnomi',3,3,'Exei PHD ptyxio kai polles systatikes kai evresitexnia',1,'karela','manolop',null);
+insert into evaluation_process values(4,1,4,'Poly Kali Synenetyxi',3,4,'O dieythintis ton proteinei gia tin thesi ayti',3,4,'Exei Master,PHD',null,'karela','manolop',null);
+insert into evaluation_process values(5,3,2,null,3,null,'O dieythintis den ton proteinei gia tin thesi',3,4,'Exei Master,PHD',null,'karela','arg',null);
+insert into evaluation_process values(6,1,1,'Elleipis Synenetyxi',1,2,'O dieythintis den exei kalh eikona',1,2,'Exei Ptyxio',2,'karela','giannakoy',null);
+
+insert into evaluation_process values(7,1,1,'Kaki Synenetyxi',1,2,'O dieythintis exei metria eikona',1,4,'Polla Ptyxia',3,'papan','giannakoy',null);
+insert into evaluation_process values(8,2,2,'Metria Synenetyxi',1,2,'O dieythintis exei metria eikona',1,4,'Polla Ptyxia',2,'papan','giannakoy',null);
+
+insert into evaluation_process values(9,3,2,'kali prosopikoi synenetxyxi',3,3,'O dieythintis einai ikanopoihmeos me tin apodosi tou',4,3,'Exei 2 ptyxia',1,'papan','arg',null);
+insert into evaluation_process values(10,3,3,'kali prosopikoi synenetxyxi',3,3,'O dieythintis ton sistynei',4,3,'Exei kalo bathmo sto pytxio',2,'papan','arg',null);
+
+
+-- -----------------------------------------------------------------------------------------------------------------------
+drop procedure if exists proc1;
+delimiter $
+create procedure proc1(IN ename varchar(25),IN esurname varchar(35))
+begin
+  declare nf int;
+  declare ar_aitisis int;
+  declare jid int;
+  declare empl varchar(12);
+  declare eval varchar(12);
+  declare xs text;
+  declare xr text;
+  declare xl text;
+  declare uname varchar(25);
+  declare usname varchar(35);
+
+  declare bcursor cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.xaraktirismos_synenteyxis,xaraktirismos_report,xaraktirismos_loipon,user.name,user.surname 
+  from user,employee,evaluation_process,evaluator,requestsevaluation
+  where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+   employee.username=evaluation_process.username_emp and 
+  evaluator.username=evaluation_process.username_eval and user.name=ename and user.surname=esurname;
+ 
+  declare continue handler for not found set nf=1;
+  
+  set nf=0;
+  
+  open bcursor;
+  
+  repeat
+  
+	fetch bcursor into ar_aitisis,jid,empl,eval,xs,xr,xl,uname,usname;
+	select xs,xr,xl;
+	if (nf=0) then
+		
+		if (xs is not null) and (xr is not null) and (xl is not null) then
+			select concat("Completed Evaluation from Evaluator: ",eval," for Employee: ",uname," ",usname," for job: ",jid);
+		else
+			select concat("Evaluation in Progress from Evaluator: ",eval," for Employee: ",uname," ",usname," for job: ",jid);
+		end if;
+		
+	end if;
+	
+    until (nf=1)
+	end repeat;
+  
+end$
+delimiter ;
+
+call proc1('Nikos','Argyriadis');
+call proc1('Kostas','Manolopoulos');
+call proc1('Maria','Giannakou');
+-- ------------------------------------------------------------------------------
+
+drop procedure if exists proc2;
+delimiter $
+create procedure proc2(IN jbdid int,IN evalusr varchar(12))
+begin
+  declare nf int;
+  declare ar_aitisis int;
+  declare jid int;
+  declare empl varchar(12);
+  declare eval varchar(12);
+  declare bs int;
+  declare br int;
+  declare bl int;
+  declare uname varchar(25);
+  declare usname varchar(35);
+  declare final_grade float(3,1);
+  declare tp float(3,1);
+  declare xs text;
+   
+  declare bcursor cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.bathmos_synenteyxis,evaluation_process.bathmos_report,evaluation_process.bathmos_loipon,evaluation_process.teliko_apotelesma,evaluation_process.sxolia_synenetyxis
+  from user,employee,evaluation_process,evaluator,requestsevaluation
+  where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+   employee.username=evaluation_process.username_emp and 
+  evaluation_process.username_eval=evalusr and evaluation_process.job_id=jbdid;
+ 
+  declare continue handler for not found set nf=1;
+  
+  set nf=0;
+  
+  open bcursor;
+  
+  repeat
+  
+	fetch bcursor into ar_aitisis,jid,empl,eval,bs,br,bl,tp,xs;
+	select ar_aitisis,jid,empl,eval,bs,br,bl,tp,xs;
+	if (nf=0) then
+		select bs,br,bl;
+		if (bs is not null) and (br is not null) and (bl is not null) and (tp is null) then
+			set final_grade=(bs+br+bl)/3;
+			update evaluation_process set teliko_apotelesma=final_grade where evaluation_process.username_eval=evalusr and evaluation_process.job_id=jbdid
+			and evaluation_process.username_emp=empl;
+			insert into evaluationresult values('',empl,jid,final_grade,xs);
+			select concat("Final Evaluation Grade from Evaluator: ",eval," for Employee with username: ",empl," for job: ",jid," is: ",final_grade);
+		else
+		set final_grade=(bs+br+bl)/3;
+			if (bs is not null) and (br is not null) and (bl is not null) and (tp is not null) then
+				select concat("Evaluation from Evaluator: ",eval," for Employee with username: ",empl," for job: ",jid," has already grade ",final_grade);
+			end if; 
+		end if;
+		
+	end if;
+	
+    until (nf=1)
+	end repeat;
+  
+end$
+delimiter ;
+
+call proc2(1,'karela');
+call proc2(2,'karela');
+call proc2(1,'papan');
+call proc2(2,'papan');
+call proc2(3,'papan');
+-- -----------------------------------------------------------------
+drop procedure if exists proc3;
+delimiter $
+create procedure proc3(IN jbdid int)
+begin
+  declare nf int;
+
+  declare ar_aitisis int;
+  declare jid int;
+  declare empl varchar(12);
+  declare eval varchar(12);
+  declare bs int;
+  declare br int;
+  declare bl int;
+  declare uname varchar(25);
+  declare usname varchar(35);
+  declare final_grade float(3,1);
+  declare ta float(3,1);
+  declare counter int;
+   
+  declare bcursor cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+  from user,employee,evaluation_process,evaluator,requestsevaluation
+  where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+   employee.username=evaluation_process.username_emp and evaluation_process.job_id=jbdid;
+ 
+   declare bcursor2 cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+				from user,employee,evaluation_process,evaluator,requestsevaluation 
+				where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+				employee.username=evaluation_process.username_emp and 
+				evaluation_process.job_id=jbdid
+				order by evaluation_process.teliko_apotelesma desc;
+				
+				
+	declare bcursor3 cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+				from user,employee,evaluation_process,evaluator,requestsevaluation
+				where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+				employee.username=evaluation_process.username_emp and  evaluation_process.job_id=jbdid;
+	
+			
+   declare continue handler for not found set nf=1;
+
+  
+  set nf=0;
+  set counter=0;
+  
+  open bcursor;
+  
+  repeat
+	fetch bcursor into ar_aitisis,jid,empl,eval,ta;
+
+	if (nf=0) then
+		if (ta is null) then
+		    set counter=counter+1;
+		end if;
+	end if;
+    until (nf=1)
+  end repeat;
+	
+	select 'Counter =',counter;
+	
+	if (counter=0) then
+		select 'ORISTIKOPOIHMENOI PINAKES';
+		
+		set nf=0;
+		open bcursor2;
+  		
+		repeat
+			fetch bcursor2 into ar_aitisis,jid,empl,eval,ta;
+
+			if (nf=0) then
+				if (ta is not null) then
+					select ar_aitisis,jid,empl,eval,ta;
+				end if;
+			end if;
+		
+		until (nf=1)
+		end repeat;
+	end if;	
+		
+	
+    if (counter<>0) then
+		select 'AXIOLOGHSH SE EXELIXI. EKKREMOUN AKOMA: ',counter;
+
+		set nf=0;
+		open bcursor3;
+  		
+		repeat
+			fetch bcursor3 into ar_aitisis,jid,empl,eval,ta;
+			select ar_aitisis,jid,empl,eval,ta;
+			select '---------------------------------';
+			if (nf=0) then
+				if (ta is not null) then
+					select ar_aitisis,jid,empl,eval,ta;
+				end if;
+			end if;
+		
+		until (nf=1)
+		end repeat;
+	end if;	
+		
+end$
+delimiter ;
+
+call proc3(1);
+call proc3(2);
+call proc3(3);
+-- ==============
+
+drop procedure if exists proc3b;
+delimiter $
+create procedure proc3b(IN jbdid int,OUT ar_aitisis int,OUT jid int,OUT empl varchar(12),OUT eval varchar(12),OUT ta float(3,1))
+begin
+  declare nf int;
+
+  -- declare ar_aitisis int;
+  -- declare jid int;
+  -- declare empl varchar(12);
+  -- declare eval varchar(12);
+  declare bs int;
+  declare br int;
+  declare bl int;
+  declare uname varchar(25);
+  declare usname varchar(35);
+  declare final_grade float(3,1);
+  -- declare ta float(3,1);
+  declare counter int;
+   
+  declare bcursor cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+  from user,employee,evaluation_process,evaluator,requestsevaluation
+  where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+   employee.username=evaluation_process.username_emp and evaluation_process.job_id=jbdid;
+ 
+   declare bcursor2 cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+				from user,employee,evaluation_process,evaluator,requestsevaluation 
+				where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+				employee.username=evaluation_process.username_emp and 
+				evaluation_process.job_id=jbdid
+				order by evaluation_process.teliko_apotelesma desc;
+				
+				
+	declare bcursor3 cursor for select distinct evaluation_process.aa,evaluation_process.job_id,evaluation_process.username_emp,evaluation_process.username_eval,evaluation_process.teliko_apotelesma
+				from user,employee,evaluation_process,evaluator,requestsevaluation
+				where user.username=employee.username and employee.username=requestsevaluation.empl_username and
+				employee.username=evaluation_process.username_emp and  evaluation_process.job_id=jbdid;
+	
+			
+   declare continue handler for not found set nf=1;
+
+  
+  set nf=0;
+  set counter=0;
+  
+  open bcursor;
+  
+  repeat
+	fetch bcursor into ar_aitisis,jid,empl,eval,ta;
+
+	if (nf=0) then
+		if (ta is null) then
+		    set counter=counter+1;
+		end if;
+	end if;
+    until (nf=1)
+  end repeat;
+	
+	select 'Counter =',counter;
+	
+	if (counter=0) then
+		select 'ORISTIKOPOIHMENOI PINAKES';
+		
+		set nf=0;
+		open bcursor2;
+  		
+		repeat
+			fetch bcursor2 into ar_aitisis,jid,empl,eval,ta;
+
+			if (nf=0) then
+				if (ta is not null) then
+					select ar_aitisis,jid,empl,eval,ta;
+				end if;
+			end if;
+		
+		until (nf=1)
+		end repeat;
+	end if;	
+		
+	
+    if (counter<>0) then
+		select 'AXIOLOGHSH SE EXELIXI. EKKREMOUN AKOMA: ',counter;
+
+		set nf=0;
+		open bcursor3;
+  		
+		repeat
+			fetch bcursor3 into ar_aitisis,jid,empl,eval,ta;
+			select ar_aitisis,jid,empl,eval,ta;
+			select '---------------------------------';
+			if (nf=0) then
+				if (ta is not null) then
+					select ar_aitisis,jid,empl,eval,ta;
+				end if;
+			end if;
+		
+		until (nf=1)
+		end repeat;
+	end if;	
+		
+end$
+delimiter ;
+
+
+
+
+-- ====================
+drop trigger if exists jobtrig1;
+delimiter $
+create trigger jobtrig1 before insert on job
+for each row
+begin
+	DECLARE jid int;
+	SET jid = (SELECT job.id FROM job WHERE job.id = NEW.id);
+
+    IF jid IS NOT NULL THEN
+      	insert into log values(NEW.evaluator,now(),'Failure','insert','job');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'INSERT on JOB failed due to duplicate JOB ID';
+	ELSE
+		insert into log values(NEW.evaluator,now(),'Success','insert','job');
+    END IF;
+end$ 
+delimiter ;
+
+-- test
+insert into job values(8,'2020-7-30',2200,'Main Manager','Patra','xristop','2020-8-1','2020-8-2');
+insert into job values(8,'2020-7-31',2200,'Second Main Manager','Patra','karela','2020-8-2','2020-8-3');
+-- ----------------------------------------
+drop trigger if exists jobtrig2;
+delimiter $
+create trigger jobtrig2 before update on job
+for each row
+begin
+    IF new.id=old.id and new.start_date=old.start_date and new.salary=old.salary and new.position=old.position and new.edra=old.edra and new.evaluator=old.evaluator
+	and new.announce_date=old.announce_date and new.submission_date=old.submission_date then
+      	insert into log values(NEW.evaluator,now(),'Failure','update','job');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on JOB failed due to duplicate Elements';
+	ELSE
+		insert into log values(NEW.evaluator,now(),'Success','update','job');
+    END IF;
+	
+	IF (old.id <> new.id) THEN
+		insert into log values(NEW.evaluator,now(),'Failure','update','Job');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Jib failed due to EXISTING JOB ID';
+	end if;
+end$ 
+delimiter ;
+
+-- test
+update job set start_date='2020-07-21',salary=2200.0,position='Main Manager',edra='Patra',evaluator='xristop',announce_date='2020-08-01 00:00:00',submission_date='2020-08-02' where id=1;
+update job set id=1 where id=1;
+
+-- -----------------------------------------------------------------
+drop trigger if exists jobtrig3;
+delimiter $
+create trigger jobtrig3 before delete on job
+for each row
+begin
+    IF (EXISTS(SELECT count(*) FROM job inner join requestsevaluation on id=job_id)) THEN
+      	insert into log values(OLD.evaluator,now(),'Failure','delete','job');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'DELETE on JOB failed due to EXISTENT REQUESTS EVALUTTION FOR THIS JOB';
+	else
+		insert into log values(old.evaluator,now(),'Success','delete','job');
+	end if;
+	
+	IF (EXISTS(SELECT count(*) FROM job inner join evaluationresult on id=job_id)) THEN
+      	insert into log values(OLD.evaluator,now(),'Failure','delete','job');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'DELETE on JOB failed due to EXISTENT EVALUTTION RESULTS FOR THIS JOB';
+	else
+		insert into log values(old.evaluator,now(),'Success','delete','job');
+	end if;
+end$
+delimiter ;
+
+-- test
+delete from job where id=4;
+
+
+
+------------------------------------------------------
+drop trigger if exists employeetrig1;
+delimiter $
+create trigger employeetrig1 before insert on employee
+for each row
+begin
+	DECLARE jeuname varchar(12);
+	SET jeuname = (SELECT employee.username FROM employee WHERE employee.username  = NEW.username);
+
+    IF jeuname IS NOT NULL THEN
+      	insert into log values(NEW.username,now(),'Failure','insert','employee');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'INSERT on Employee failed due to duplicate EMPLOYEE USERNAME';
+	ELSE
+		insert into log values(NEW.username,now(),'failure','insert','Empoyee');
+    END IF;
+end$ 
+delimiter ;
+
+--test
+insert into employee values('basil','Einai kalos ypallilos','Polles systatikes','basil_certificates.pdf','basil_awards.pdf');
+insert into employee values('dimop','Einai metrios ypallilos','Liges systatikes','dimop_certificates.pdf','dimop_awards.pdf');
+
+-- ----------------------------------------
+drop trigger if exists employeetrig2;
+delimiter $
+create trigger employeetrig2 before update on employee
+for each row
+begin
+    IF new.username=old.username and new.bio=old.bio and new.sistatikes=old.sistatikes and new.certificates=old.certificates and new.awards=old.awards then
+      	insert into log values(NEW.username,now(),'Failure','update','Employee');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Empoyee failed due to duplicate Elements';
+	ELSE
+		insert into log values(NEW.username,now(),'Success','update','Employee');
+    END IF;
+	IF (old.username <> new.username) THEN
+		insert into log values(NEW.username,now(),'Failure','update','Employee');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Employee failed due to EXISTING USERNAME';
+	end if;
+end$ 
+delimiter ;
+
+-- test
+update employee set sistatikes='None' where username='basil';
+update employee set username='basilis' where username='basil';
+
+-- -----------------------------------------------------------------
+drop trigger if exists employeetrig3;
+delimiter $
+create trigger employeetrig3 before delete on employee
+for each row
+begin
+    IF (EXISTS(SELECT count(*) FROM employee inner join requestsevaluation on username=empl_username)) THEN
+      	insert into log values(OLD.username,now(),'Failure','delete','employee');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'DELETION FROM EMPLOYEE failed due to EXISTING EVALUATION REQUESTS FOR THIS EMPLOYEE';
+	else
+		insert into log values(old.username,now(),'Success','delete','employee');
+	end if;
+end$
+delimiter ;
+
+-- test
+delete from employee where username='dalak';
+
+-- ------------------------------------------------------
+
+drop trigger if exists requestsevaluationrig1;
+delimiter $
+create trigger requestsevaluationrig1 before insert on requestsevaluation
+for each row
+begin
+	DECLARE jeuname varchar(12);
+	SET jeuname = (SELECT requestsevaluation.empl_username FROM requestsevaluation WHERE requestsevaluation.empl_username=NEW.empl_username and requestsevaluation.job_id=new.job_id);
+
+    IF jeuname IS NOT NULL THEN
+      	insert into log values(NEW.empl_username,now(),'Failure','insert','requestsevaluation');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'INSERT on requestsevaluation failed due to duplicate EMPLOYEE USERNAME and JOB ID';
+	ELSE
+		insert into log values(NEW.empl_username,now(),'failure','insert','requestsevaluation');
+    END IF;
+end$ 
+delimiter ;
+-- test
+insert into requestsevaluation values('dimop',5);
+
+-- ----------------------------------------------------
+
+drop trigger if exists requestsevaluationrig2;
+delimiter $
+create trigger requestsevaluationrig2 before update on requestsevaluation
+for each row
+begin
+	IF (old.empl_username = new.empl_username and old.job_id=new.job_id) THEN
+		insert into log values(NEW.empl_username,now(),'Failure','Update','requestsevaluation');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on requestsevaluation failed due to duplicate EMPLOYEE USERNAME and JOB ID';
+	ELSE
+		insert into log values(NEW.empl_username,now(),'failure','update','requestsevaluation');
+    END IF;
+end$ 
+delimiter ;
+
+-- test
+update requestsevaluation set empl_username='dalak',job_id=2 where empl_username='dalak' and job_id=2;
+ -- ------------------------
+ 
+drop trigger if exists requestsevaluationrig3;
+delimiter $
+create trigger requestsevaluationrig3 before delete on requestsevaluation
+for each row
+begin
+    IF (EXISTS(SELECT count(*) FROM requestsevaluation inner join employee on username=empl_username group by empl_username)) THEN
+      	insert into log values(OLD.empl_username,now(),'Failure','delete','requestsevaluation');
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'DELETION FROM requestsevaluation failed due to EXISTING EMPLOYEE WHO REQUESTS FOR EVALUATION';
+	else
+		insert into log values(old.empl_username,now(),'Success','delete','requestsevaluation');
+	end if;
+end$
+delimiter ;
+
+-- test
+DELETE FROM requestsevaluation WHERE empl_username='dalak';
+
+-- ---------------------------------------------------------------
+
+drop trigger if exists companytrig;
+delimiter $
+create trigger companytrig before update on company
+for each row
+begin
+	IF (old.AFM <> new.AFM) THEN
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Compnay failed due to Company AFM cannot be changed';
+    END IF;
+	
+	IF (old.DOY <> new.DOY) THEN
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Compnay failed due to Company DOY cannot be changed';
+    END IF;
+	
+	IF (old.name <> new.name) THEN
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on Compnay failed due to Company NAME cannot be changed';
+    END IF;
+end$ 
+delimiter ;
+
+-- test
+update company set AFM='111111111' where AFM='123456123';
+update company set DOY='C PATRAS'  where AFM='123456123';
+update company set name='Kataskeyastiki OE PATRAS' where AFM='123456123';
+update company set phone='2610324567' where AFM='123456123';
+update company set street='Agias',num=100,city='Pirgos' where AFM='123456123';
+-- -----------------------------------------------------------------------------
+
+
+drop trigger if exists useradmintrig;
+delimiter $
+create trigger useradmintrig before update on user
+for each row
+begin
+	IF (old.username <> new.username and old.username<>'admin') THEN
+		SIGNAL SQLSTATE VALUE '45000' SET MESSAGE_TEXT = 'UPDATE on User failed due to User Username cannot be changed';
+    END IF;
+end$ 
+delimiter ;
+
+-- test
+update user set username='maria' where username='dalak';
+update user set username='maria' where username='admin';
+
+
+-- -----------------
+create table tomeas(kt int not null,decription varchar(50),AFM char(9),primary key(kt), constraint wz foreign key(AFM) references company(AFM));
+insert into tomeas values(1,'Kataskeyazei logistika kai emporika paketa','123456123');
+insert into tomeas values(2,'Kataskeyazei paketa sxediasis gia mixanikous','123456123');
+
